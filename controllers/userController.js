@@ -1,4 +1,8 @@
-const User = require('../models/User')
+const User = require('../models/User');
+const Thoughts = require('../models/Thoughts');
+const Reactions = require('../models/Reactions');
+
+
 module.exports = {
     // get users
     async getUsers(req, res) {
@@ -26,10 +30,11 @@ module.exports = {
       // create a new user
       async createUser(req, res) {
         try {
-          const dbUserData = await User.create(req.body);
+          const dbUserData = await User.create(req.body);         
           res.json(dbUserData);
         } catch (err) {
-          res.status(500).json(err);
+            console.error(err);
+            res.status(500).json({ error: err.message });
         }
       },
       // update a user
@@ -40,11 +45,9 @@ module.exports = {
                 req.body, // update data
                 { new: true } // return the updated document
             );
-    
             if (!updatedUser) {
                 return res.status(404).json({ message: 'No user with this ID' });
             }
-    
             res.json(updatedUser);
         } catch (err) {
             res.status(500).json(err);
@@ -111,6 +114,30 @@ module.exports = {
             res.status(200).json({ message: "Friend removed successfully.", user });
         } catch (err) {
             res.status(500).json(err)
+        }
+    },
+    async getUserThoughts(req,res) {
+        try {
+            const userId = req.params.userId; // Get the user ID from the request parameters
+            const thoughts = await Thoughts.find({ user: userId }); // Find thoughts by user ID
+            if (!thoughts) {
+                return res.status(404).json({ message: "No thoughts found for this user." });
+            }
+            res.json(thoughts);
+        } catch (err) {
+            res.status(500).json({ message: "Internal server error", error: err });
+        }
+    },
+    async getUserReactions(req,res) {
+        try {
+            const userId = req.params.userId; // Get the user ID from the request parameters
+            const reactions = await Reactions.find({ user: userId }); // Find reactions by user ID
+            if (!thoughts) {
+                return res.status(404).json({ message: "No reactions found for this user." });
+            }
+            res.json(reactions);
+        } catch (err) {
+            res.status(500).json({ message: "Internal server error", error: err });
         }
     }
 }
